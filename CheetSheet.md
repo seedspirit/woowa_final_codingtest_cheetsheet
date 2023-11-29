@@ -31,6 +31,7 @@
 └── View
     ├──  InputView
     │       ├──  InputValidtor
+    │       │       └──  CommonValidator.java    
     │       └──  InputView.java
     │
     └──  OutputView
@@ -41,29 +42,101 @@
 - Constants와 Message에 처음부터 너무 힘을주지 않는다. 중요한 건 핵심로직
 
 
+### Exception
+
+- 프리픽스 먼저 만들고 예외처리 메시지 만들기
+- 프리픽스 외 enum 클래스는 commonvalidatorerrmsg 참고
+- 에러 메시지 안 헷갈리게 조심하기 & 꼭 .getMessage()로 출력하기
+
+```
+public enum ExceptionPrefix {
+    ERROR_PREFIX("[ERROR] ");
+
+    private final String message;
+
+    ExceptionPrefix(String message) {
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+}
+
+public enum CommonValidatorErrMsg {
+    ASK_NO_EMPTY_INPUT("빈칸은 허용되지 않습니다."),
+    ASK_NO_WHITE_SPACE("공백 없이 입력해주세요.");
+
+    private String message;
+
+    CommonValidatorErrMsg(String message) {
+        this.message = ExceptionPrefix.ERROR_PREFIX.getMessage() + message;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+}
+
+```
+
+
 
 ### Validator
 - 필요한 거 가져다 쓰기
 - 우선 출력 메시지에서 포맷팅은 신경쓰지 않고, 이후에 시간 남을 때 포맷팅을 고려한다
 
+#### CommonValidator & ErrMsg
+
 ```
 
-// 빈 입력인지 체크
-public void isNotEmpty(String userInput) throws IllegalArgumentException{
-    if(userInput.isEmpty()){
-        throw new IllegalArgumentException(에러_메시지_Enum.getMessage());
+public enum CommonValidatorErrMsg {
+    ASK_NO_EMPTY_INPUT("빈칸은 허용되지 않습니다."),
+    ASK_NO_WHITE_SPACE("공백 없이 입력해주세요.");
+
+    private String message;
+
+    CommonValidatorErrMsg(String message) {
+        this.message = ExceptionPrefix.ERROR_PREFIX.getMessage() + message;
+    }
+
+    public String getMessage() {
+        return message;
     }
 }
 
 
-// 공백 있는지 체크
-public final String WHITE_SPACE = " ";
+public class CommonValidator {
 
-public void containsNoWhiteSpace(String userInput) throws IllegalArgumentException{
-    if(userInput.contains(WHITE_SPACE)){
-            throw new IllegalArgumentException(에러_메시지_Enum.getMessage());
+    private CommonValidator() {
+
+    }
+
+    // 기술적으로는 빈 칸이 아니지만, 실질적으로 빈 칸인 케이스를 잡기 위해 사용
+    public static void isBlankInput(String userInput) throws IllegalArgumentException {
+        if (!userInput.isEmpty() && userInput.isBlank()) {
+            throw new IllegalArgumentException(ASK_NO_EMPTY_INPUT.getMessage());
         }
     }
+
+
+    // 기술적으로 빈 입력을 잡아내기 위해 사용
+    public static void isEmptyInput(String userInput) throws IllegalArgumentException {
+        if (userInput.isEmpty()) {
+            throw new IllegalArgumentException(ASK_NO_EMPTY_INPUT.getMessage());
+        }
+    }
+
+    // 중간에 공백(띄어쓰기)가 있는지 확인
+    public static void containsNoWhiteSpace(String userInput) throws IllegalArgumentException {
+        if (userInput.contains(" ")) {
+            throw new IllegalArgumentException(ASK_NO_WHITE_SPACE.getMessage());
+        }
+    }
+}
+```
+
+```
 
 
 // 특정 포맷에 맞는지 확인
