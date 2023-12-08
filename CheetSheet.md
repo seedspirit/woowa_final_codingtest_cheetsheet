@@ -1,10 +1,11 @@
 ## 시작할 때
 
 > 0. **인텔리제이 버전 확인: 프로젝트, 빌드툴**
-> 1. 깃허브d에서 **Fork**하기 
+> 1. 깃허브에서 **Fork**하기 
 > 2. iterm에서 디렉토리 만들어 **Clone**하기 `git clone http:~~~`
-> 3. **seedspirit 브랜치** 만들고 전환해서 작업 `git branch -c seedspirit `
+> 3. **seedspirit 브랜치** 만들고 전환해서 작업 `git switch -c seedspirit `
 > 4. docs 생성하고 pull request 보내지는지 확인 `git push origin seedspirit` (`git push -u origin seedspirit` 쓰면 이후 git push만 해도 됨)
+> 5. CheetSheet 복붙할 때 세부적인 것들(인자 이름 등) 신경쓰고 바꾸기 - 특히 자료형 네이밍이 변수명에 있는 경우
 
 
 
@@ -47,6 +48,7 @@
 - 프리픽스 먼저 만들고 예외처리 메시지 만들기
 - 프리픽스 외 enum 클래스는 commonvalidatorerrmsg 참고
 - 에러 메시지 안 헷갈리게 조심하기 & 꼭 .getMessage()로 출력하기
+- Validation 목록을 보고 common 이라는 네이밍을 쓸 것인지, 안 쓸 것인지 확인해야 한다
 
 ```
 public enum ExceptionPrefix {
@@ -241,3 +243,29 @@ private <T> T getValidInputWithRetryAndFunctionApply(String message, Validator v
 
 ```
 
+만약 모델에서 검증하고 다시 입력을 받아야 하는 경우
+```
+// 전역 변수를 안 쓰는 버전
+private List<Integer> getUserInputWithValidation(UserInput userInput, CardGame cardGame){
+        return receiveInputUntilValid(userInput, cardGame);
+    }
+
+private List<Integer> receiveInputUntilValid(UserInput userInput, CardGame cardGame) {
+    while (true) {
+        List<Integer> input = userInput.getFirstUserInput();
+        if (isInputValid(input, cardGame)) {
+            return input;
+        }
+    }
+}
+
+private boolean isInputValid(List<Integer> input, CardGame cardGame) {
+    try {
+        cardGame.validateIfCoordAlreadySolved(input);
+        return true;
+    } catch (IllegalArgumentException e) {
+        System.out.println(e.getMessage());
+        return false;
+    }
+}
+```
