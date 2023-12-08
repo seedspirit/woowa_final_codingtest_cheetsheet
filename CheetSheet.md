@@ -14,18 +14,18 @@
 ```
 프로젝트이름
 ├── Constants
-│   └── DomainConstants.java
+│   └── DomainConstants.java (enum 혹은 java 중 상황에 맞게 선택)
 │
 ├── Controller
 │   └── Controller.java
 │
 ├── Message
 │   ├── Exception
-│   │       ├──  ExceptionPrefix.java
-│   │       └──  CommonValidatorErrMsg.java
+│   │       ├──  ExceptionPrefix.java (enum)
+│   │       └──  CommonValidatorErrMsg.java (enum)
 │   └── PromptMsg
-│           ├──  InputViewPromptMsg.java
-│           └──  OutputViewPromptMsg.java
+│           ├──  InputViewPromptMsg.java (enum)
+│           └──  OutputViewPromptMsg.java (enum)
 │
 ├── Model
 │
@@ -41,6 +41,44 @@
 
 - InputView부터 구현해도 되지만, InputView 구현은 (validation 포함) 30분 내로 하도록 한다.
 - Constants와 Message에 처음부터 너무 힘을주지 않는다. 중요한 건 핵심로직
+
+### InputView
+
+- 기능 명세를 작성한 뒤 프롬프트 메시지부터 만들면서 전체적인 데이터를 파악한다
+
+#### InputViewPromptMsg.java & OutputViewPromptMsg.java
+```
+public enum InputViewPromptMsg {
+   
+   // 메시지 입력
+
+    private String message;
+
+    InputViewPromptMsg(String message) {
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+}
+
+
+public enum OutputViewPromptMsg {
+    
+    // 메시지 입력
+    
+    private String message;
+    
+    OutputViewPromptMsg(String message){
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+}
+```
 
 
 ### Exception
@@ -146,8 +184,15 @@ private final String MOVE_DIR_REGULAR_EXPRESSION = "^[UD]$"; 특정문자 하나
 private final String NUMBER_REGULAR_EXPRESSION = "^[0-9]+$";
 private final String STRING_REGULAR_EXPRESSION = "^[a-zA-Z]+$"; // 한글까지 포함 한다면 [a-zA-Z가-힣]
 
+public void validate(String userInput) {
+        isBlankInput(userInput);
+        isEmptyInput(userInput);
+        containsNoWhiteSpace(userInput);
 
-public void isRightFormat(String userInput) throws IllegalArgumentException{
+    }
+
+
+private void isRightFormat(String userInput) throws IllegalArgumentException{
     if(!userInput.matches(적절한_정규표현식)){
         throw new IllegalArgumentException(에러_메시지_Enum.getMessage());
     }
@@ -155,7 +200,7 @@ public void isRightFormat(String userInput) throws IllegalArgumentException{
 
 
 // 입력된 숫자가 특정 범위 내에 있는지
-public void isBetweenValidRange(String userInput) throws IllegalArgumentException{
+private void isBetweenValidRange(String userInput) throws IllegalArgumentException{
     if(Integer.parseInt(userInput) < 최소값상수
             || Integer.parseInt(userInput) > 최대값상수){
         throw new IllegalArgumentException(에러_메시지_Enum.getMessage());
@@ -164,7 +209,7 @@ public void isBetweenValidRange(String userInput) throws IllegalArgumentExceptio
 
 
 // 리스트 안의 원소의 갯수가 맞는지
-public void areNamesMoreThanTwo(List<String> userInputList) throws IllegalArgumentException {
+private void areNamesMoreThanTwo(List<String> userInputList) throws IllegalArgumentException {
     if (userInputList.size() < 최소값상수 || userInputList.size() > 최대값상수) {
         throw new IllegalArgumentException(에러_메시지_Enum.getMessage());
     }
@@ -172,7 +217,7 @@ public void areNamesMoreThanTwo(List<String> userInputList) throws IllegalArgume
 
 
 // 리스트 내 문자열 원소의 길이가 유효 범위인지
-public void isNameLengthInValidRange(List<String> userInputList) throws IllegalArgumentException {
+private void isNameLengthInValidRange(List<String> userInputList) throws IllegalArgumentException {
     for (String userInput : userInputList) {
         if (userInput.length() < 최소값상수 || userInput.length() > 최대값상수) {
             throw new IllegalArgumentException(에러_메시지_Enum.getMessage());
@@ -182,7 +227,7 @@ public void isNameLengthInValidRange(List<String> userInputList) throws IllegalA
 
 
 // 입력된 리스트 안에 중복 원소가 없는지
-public void isNotDuplicated(List<String> userInputList) throws IllegalArgumentException {
+private void isNotDuplicated(List<String> userInputList) throws IllegalArgumentException {
     Set<String> userInputSet = new HashSet<String>(userInputList);
     if (userInputSet.size() != userInputList.size()) {
         throw new IllegalArgumentException(에러_메시지_Enum.getMessage());
@@ -201,6 +246,27 @@ public interface Validator {
 
 ```
 
+### InputView
+
+```
+public class InputView {
+
+    // 필요한 객체 만들기
+
+    public InputView(){
+        System.out.println(//초기화 때 내보내야 하는 기본 안내);
+    }
+
+    public Integer visitDateInput(){ // 자료형, 메서드 이름은 알아서 수정 & 알아서 반환해서 리턴
+        String userInput = inputWithValidation(
+                // 적절한enum.getMessage(),
+                // 적절한 validator
+        );
+
+        return ;
+    }
+}
+```
 
 - Validator 인터페이스로 추상화했을 경우 아래 함수들 사용 가능. 적절한 거 가져다가 쓰기 (왠만하면 2번째 추천)
 
